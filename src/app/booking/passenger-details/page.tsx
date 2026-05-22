@@ -17,10 +17,27 @@ export default async function PassengerDetailsPage({ searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?next=/booking/passenger-details')
 
-  const [{ data: flight }, { data: seat }] = await Promise.all([
-    supabase.from('flights').select('*').eq('id', flightId).single(),
-    supabase.from('seats').select('*').eq('id', seatId).single(),
-  ])
+  const flightQuery = supabase
+  .from('flights')
+  .select('*')
+  .eq('id', flightId)
+  .single()
+
+const seatQuery = supabase
+  .from('seats')
+  .select('*')
+  .eq('id', seatId)
+  .single()
+
+const [
+  { data: flight },
+  { data: seat }
+] = await Promise.all([flightQuery, seatQuery])
+
+if (!flight || !seat) redirect('/search')
+
+const totalPrice =
+  Number(flight.base_price) + Number(seat.extra_fee)
 
   if (!flight || !seat) redirect('/search')
 
