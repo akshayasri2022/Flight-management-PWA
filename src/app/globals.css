@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design Tokens ──────────────────────────────────────────── */
+:root {
+  --font-sora: 'Sora', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Brand palette */
+  --color-bg-deep:     #020817;
+  --color-bg-surface:  #0a1628;
+  --color-bg-elevated: #0f1f3d;
+  --color-border:      #1e3a5f;
+  --color-border-glow: #2563eb44;
+
+  --color-accent:      #3b82f6;
+  --color-accent-glow: #3b82f633;
+  --color-accent-2:    #06b6d4;
+  --color-success:     #10b981;
+  --color-warning:     #f59e0b;
+  --color-danger:      #ef4444;
+
+  /* Seat colors */
+  --seat-available:  #1e3a5f;
+  --seat-selected:   #3b82f6;
+  --seat-occupied:   #1e293b;
+  --seat-yours:      #06b6d4;
+  --seat-first:      #78350f;
+  --seat-business:   #1e3a5f;
+  --seat-economy:    #162032;
+}
+
+/* ── Base Styles ────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sora);
+  background: var(--color-bg-deep);
+  color: #e2e8f0;
+}
+
+/* ── Custom Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a1628;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e3a5f;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* ── Component Classes ──────────────────────────────────────── */
+@layer components {
+
+  .glass-card {
+    @apply rounded-2xl border border-slate-800/60 bg-slate-900/60 backdrop-blur-sm;
+  }
+
+  .glass-card-elevated {
+    @apply rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur-md;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl
+           bg-blue-600 px-6 py-3 text-sm font-semibold text-white
+           transition-all duration-200
+           hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25
+           active:scale-[0.98]
+           disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl
+           border border-slate-700 bg-slate-800/60 px-6 py-3
+           text-sm font-semibold text-slate-200
+           transition-all duration-200
+           hover:border-slate-600 hover:bg-slate-700/60
+           active:scale-[0.98]
+           disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl
+           bg-red-600/10 border border-red-600/30 px-6 py-3
+           text-sm font-semibold text-red-400
+           transition-all duration-200
+           hover:bg-red-600/20 hover:border-red-500/50
+           active:scale-[0.98];
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-slate-700 bg-slate-800/60
+           px-4 py-3 text-sm text-slate-100 placeholder-slate-500
+           outline-none ring-0
+           transition-all duration-200
+           focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .label {
+    @apply block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1.5;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+
+  .status-confirmed {
+    @apply status-badge bg-emerald-500/15 text-emerald-400 border border-emerald-500/20;
+  }
+
+  .status-rescheduled {
+    @apply status-badge bg-amber-500/15 text-amber-400 border border-amber-500/20;
+  }
+
+  .status-cancelled {
+    @apply status-badge bg-red-500/15 text-red-400 border border-red-500/20;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-white tracking-tight;
+  }
+
+  .page-container {
+    @apply mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8;
+  }
+}
+
+/* ── Animations ─────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 #3b82f633; }
+  50%       { box-shadow: 0 0 20px 4px #3b82f633; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #0f1f3d 25%,
+    #1e3a5f 50%,
+    #0f1f3d 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ── PWA Install Banner ──────────────────────────────────────── */
+.install-banner {
+  @apply fixed bottom-4 left-4 right-4 z-50 rounded-2xl
+         border border-blue-500/30 bg-slate-900/95 backdrop-blur-md
+         p-4 shadow-2xl shadow-blue-500/10;
+}
