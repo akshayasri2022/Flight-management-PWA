@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -16,25 +17,34 @@ export default async function ConfirmationPage({ searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch each relation separately to avoid TypeScript inference issues
-  const { data: booking } = await supabase
+  const { data: bookingRaw } = await supabase
     .from('bookings')
     .select('*')
     .eq('id', bookingId)
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!booking) redirect('/')
+  if (!bookingRaw) redirect('/')
 
-  const [{ data: flight }, { data: seat }, { data: passengers }] = await Promise.all([
-    supabase.from('flights').select('*').eq('id', booking.flight_id).single(),
-    supabase.from('seats').select('*').eq('id', booking.seat_id).single(),
+  const booking = bookingRaw as {
+    id: string
+    pnr_code: string
+    total_price: number
+    flight_id: string
+    seat_id: string
+  }
+
+  const [{ data: flightRaw }, { data: seatRaw }, { data: passengersRaw }] = await Promise.all([
+    supabase.from('flights').select('*').eq('id', booking.flight_id).maybeSingle(),
+    supabase.from('seats').select('*').eq('id', booking.seat_id).maybeSingle(),
     supabase.from('passengers').select('*').eq('booking_id', bookingId),
   ])
 
-  if (!flight || !seat) redirect('/')
+  if (!flightRaw || !seatRaw) redirect('/')
 
-  const passenger = passengers?.[0]
+  const flight = flightRaw as any
+  const seat   = seatRaw as any
+  const passenger = passengersRaw?.[0] as any
 
   return (
     <div className="min-h-screen bg-[#020817] flex flex-col">
@@ -53,7 +63,6 @@ export default async function ConfirmationPage({ searchParams }: Props) {
 
       <main className="relative flex flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg animate-fade-up">
-          {/* Success icon */}
           <div className="mb-6 flex flex-col items-center text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/30">
               <CheckCircle2 className="h-8 w-8 text-emerald-400" />
@@ -62,9 +71,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
             <p className="mt-2 text-slate-400">Your flight has been booked successfully.</p>
           </div>
 
-          {/* Boarding pass */}
           <div className="rounded-2xl border border-slate-700/60 overflow-hidden shadow-2xl shadow-emerald-500/5">
-            {/* PNR header */}
             <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-5 text-center">
               <div className="text-xs font-medium uppercase tracking-widest text-blue-100 mb-1">
                 Booking Reference (PNR)
@@ -74,7 +81,6 @@ export default async function ConfirmationPage({ searchParams }: Props) {
               </div>
             </div>
 
-            {/* Route */}
             <div className="bg-slate-900/80 p-5">
               <div className="flex items-center justify-between">
                 <div>
@@ -93,14 +99,12 @@ export default async function ConfirmationPage({ searchParams }: Props) {
               </div>
             </div>
 
-            {/* Dashed divider */}
             <div className="relative bg-slate-900/80">
               <div className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#020817]" />
               <div className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#020817]" />
               <div className="border-t border-dashed border-slate-700/60 mx-4" />
             </div>
 
-            {/* Details grid */}
             <div className="bg-slate-900/80 p-5 grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-xs text-slate-500 flex items-center gap-1 mb-0.5">
@@ -131,7 +135,6 @@ export default async function ConfirmationPage({ searchParams }: Props) {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Link href="/bookings" className="btn-primary flex-1 justify-center">
               View My Bookings
