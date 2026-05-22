@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Plane, CheckCircle2, Calendar, MapPin, User, Armchair } from 'lucide-react'
 import { formatDateTime, formatPrice, getCityCode, flightDuration } from '@/lib/utils'
-import type { Flight, Seat, Passenger } from '@/lib/types/database'
 
 interface Props {
   searchParams: { pnr?: string; bookingId?: string }
@@ -17,23 +16,25 @@ export default async function ConfirmationPage({ searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Fetch each relation separately to avoid TypeScript inference issues
   const { data: booking } = await supabase
     .from('bookings')
-    .select(`
-      *,
-      flight:flights(*),
-      seat:seats(*),
-      passenger:passengers(*)
-    `)
+    .select('*')
     .eq('id', bookingId)
     .eq('user_id', user.id)
     .single()
 
   if (!booking) redirect('/')
 
-  const flight = booking.flight as Flight
-  const seat = booking.seat as Seat
-  const passenger = Array.isArray(booking.passenger) ? booking.passenger[0] : booking.passenger
+  const [{ data: flight }, { data: seat }, { data: passengers }] = await Promise.all([
+    supabase.from('flights').select('*').eq('id', booking.flight_id).single(),
+    supabase.from('seats').select('*').eq('id', booking.seat_id).single(),
+    supabase.from('passengers').select('*').eq('booking_id', bookingId),
+  ])
+
+  if (!flight || !seat) redirect('/')
+
+  const passenger = passengers?.[0]
 
   return (
     <div className="min-h-screen bg-[#020817] flex flex-col">
